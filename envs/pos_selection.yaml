@@ -1,0 +1,15 @@
+name: pos_selection
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=1_gnu
+  - libgcc-ng=9.3.0=h2828fa1_18
+  - libgomp=9.3.0=h2828fa1_18
+  - mafft=7.475=h516909a_0
+  - pal2nal=14.1=pl526_1
+  - perl=5.26.2=h36c2ea0_1008
+  - perl-getopt-long=2.50=pl526_1
+  - seqkit=0.15.0=0
