@@ -10,12 +10,14 @@ rule translate:
 	output:
 		"genes/{locus}/codon_guided_msa/translated.fasta"
 	params:
-		"genes/{locus}/*fasta"
+		fastas = "genes/{locus}/*fasta",
+		tmp = "genes/{locus}/codon_guided_msa/tmp_translated.fasta"
 	threads: 1
 
 	shell:
-		"ls {params} | xargs -I@ -n 1 sh -c 'seqkit translate -M --clean @ >> {output}'"
-configfile: "config.json"
+		"ls {params.fastas} | xargs -I@ -n 1 sh -c 'seqkit translate -M --clean @ >> {params.tmp}'; "
+		"scripts/reorder_seqs.py {params.tmp} {output}; "
+		"rm {params.tmp}"
 
 rule remove_stop:
 	input:
@@ -47,11 +49,14 @@ rule merge_cds:
 	output:
 		"genes/{locus}/codon_guided_msa/multi_fasta_cds.fasta"
 	params:
-		"genes/{locus}/*fasta"
+		tmp = 'genes/{locus}/codon_guided_msa/tmp_multi_fasta_cds.fasta',
+		fastas = "genes/{locus}/*fasta"
 	threads: 1
 
 	shell:
-		"ls {params} | xargs -I@ sh -c 'cat @ >> {output}'"
+		"ls {params.fastas} | xargs -I@ sh -c 'cat @ >> {params.tmp}'; "
+		"scripts/reorder_seqs.py {params.tmp} {output}; "
+		"rm {params.tmp}"
 
 rule codon_guided_msa:
 	input:
@@ -197,17 +202,25 @@ rule codeml_stats:
 	output:
 		directory=directory("codeml/{locus}/stats")
 	params:
+		locus = "{locus}",
 		mlcs="codeml/{locus}/mlc_files/mlc*",
 		stats="codeml/{locus}/stats/{locus}_modeltesting.txt",
 		summary_models="codeml/{locus}/stats/{locus}_summary_models.txt",
-		summary_stats="codeml/{locus}/stats/{locus}_summary_stats.txt"
+		summary_stats="codeml/{locus}/stats/{locus}_summary_stats.txt",
+		mlc_8 = "codeml/{locus}/mlc_files/mlc_8_{locus}.txt",
+		codon_msa = "genes/{locus}/codon_guided_msa/{locus}_codon_guided_msa.fasta",
+		tmp_out = "codeml/{locus}/stats/tmp_outfile.txt",
+		outfile = "codeml/{locus}/stats/{locus}_residues_under_selection.txt"
+
+
 
 	threads: 1
 
 	shell:
 		"mkdir {output.directory};"
 		"grep lnL {params.mlcs} > {params.stats};"
-		"scripts/codeml_stats.py {params.stats} {params.summary_models} {params.summary_stats}"
+		"scripts/codeml_stats.py {params.stats} {params.summary_models} {params.summary_stats}; "
+		"scripts/residue_selection.py {params.locus} {params.mlc_8} {params.codon_msa} {params.tmp_out} {params.outfile}"
 
 	
 rule final:
