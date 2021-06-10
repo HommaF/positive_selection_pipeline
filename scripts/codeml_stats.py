@@ -24,7 +24,6 @@ new = list()
 with open(modeltesting) as f:
 
     for lines in f:
-        print(lines)
         model = re.search('mlc_([0-9])_', lines)
         name = re.search('mlc_[0-9]_(Solyc[0-9]+g[0-9\.]+)\.txt', lines)
         df = re.search('np:.*?([0-9]*)\):', lines)

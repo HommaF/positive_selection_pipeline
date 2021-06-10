@@ -110,7 +110,8 @@ for line in linear_msa:
             if codon  == '---':
                 gap_counter += 1
 
-            elif i in loci:
+#            elif i in loci:
+            if i in loci:
                 
                 if gap_counter == 0:
                     header.append(str(i+1))
